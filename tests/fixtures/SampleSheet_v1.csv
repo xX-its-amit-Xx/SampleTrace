@@ -1,0 +1,25 @@
+[Header]
+IEMFileVersion,4
+Investigator Name,jdoe
+Experiment Name,run123
+Date,2026-05-20
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Assay,TruSeq HT
+Description,SampleTrace test fixture v1
+Chemistry,Default
+
+[Reads]
+151
+151
+
+[Settings]
+ReverseComplement,0
+Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+S001_ctrl,Control_A,Plate1,A01,D701,ATTACTCG,D501,TATAGCCT,proj_pbmc,Control PBMC
+S002_ctrl,Control_B,Plate1,A02,D702,TCCGGAGA,D502,ATAGAGGC,proj_pbmc,Control PBMC
+S003_trt,Treated_A,Plate1,A03,D703,CGCTCATT,D503,CCTATCCT,proj_pbmc,Stimulated PBMC
+S004_trt,Treated_B,Plate1,A04,D704,GAGATTCC,D504,GGCTCTGA,proj_pbmc,Stimulated PBMC

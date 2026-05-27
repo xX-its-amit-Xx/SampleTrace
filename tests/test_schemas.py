@@ -173,14 +173,16 @@ class TestReconciliationRow:
         )
         assert row.is_flagged
 
-    def test_confidence_none_requires_missing_source(self) -> None:
-        with pytest.raises(ValidationError):
-            ReconciliationRow(
-                sample_id="S001",
-                confidence=MatchConfidence.NONE,
-                sources_present=[SampleSource.BENCHLING],
-                sources_missing=[],
-            )
+    def test_confidence_none_accepts_empty_missing_sources(self) -> None:
+        # When the caller has no downstream sources at all, NONE with empty
+        # sources_missing is the natural representation.
+        row = ReconciliationRow(
+            sample_id="S001",
+            confidence=MatchConfidence.NONE,
+            sources_present=[SampleSource.BENCHLING],
+            sources_missing=[],
+        )
+        assert row.is_flagged
 
 
 class TestReconciliationReport:

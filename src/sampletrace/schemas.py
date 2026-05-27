@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class SampleSource(StrEnum):
@@ -179,11 +179,6 @@ class ReconciliationRow(BaseModel):
         """True when this row needs human attention."""
         return bool(self.mismatches) or self.confidence.is_red
 
-    @model_validator(mode="after")
-    def _check_confidence_consistency(self) -> ReconciliationRow:
-        if self.confidence == MatchConfidence.NONE and not self.sources_missing:
-            raise ValueError("confidence=NONE requires at least one missing source")
-        return self
 
 
 class ReconciliationReport(BaseModel):
