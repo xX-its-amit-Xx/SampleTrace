@@ -95,10 +95,10 @@ class TestCanonicalSample:
             lane=1,
         )
         merged = bch.merge_evidence(sheet)
-        assert merged.organism == "Homo sapiens"           # from bch
-        assert merged.index_i7 == "ACGTACGT"               # from sheet
-        assert merged.lane == 1                            # from sheet
-        assert merged.benchling_entity_id == "bfi_abc"     # from bch
+        assert merged.organism == "Homo sapiens"  # from bch
+        assert merged.index_i7 == "ACGTACGT"  # from sheet
+        assert merged.lane == 1  # from sheet
+        assert merged.benchling_entity_id == "bfi_abc"  # from bch
 
     def test_merge_evidence_self_wins_conflict(self) -> None:
         bch = CanonicalSample(

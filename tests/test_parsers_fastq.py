@@ -19,10 +19,7 @@ def _fastq_content(
     i7: str = "ATTACTCG",
     i5: str = "TATAGCCT",
 ) -> str:
-    header = (
-        f"@{instrument}:{run}:{flowcell}:{lane}:11101:1234:5678 "
-        f"1:N:0:{i7}+{i5}\n"
-    )
+    header = f"@{instrument}:{run}:{flowcell}:{lane}:11101:1234:5678 1:N:0:{i7}+{i5}\n"
     return header + "ACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIII\n"
 
 
@@ -74,10 +71,7 @@ class TestParseFastqHeader:
 
     def test_single_index(self, tmp_path: Path) -> None:
         path = tmp_path / "S004_S4_L001_R1_001.fastq"
-        path.write_text(
-            "@NB551234:123:HWNCMBGXC:1:11101:1:1 1:N:0:ATTACTCG\n"
-            "ACGT\n+\nIIII\n"
-        )
+        path.write_text("@NB551234:123:HWNCMBGXC:1:11101:1:1 1:N:0:ATTACTCG\nACGT\n+\nIIII\n")
         sample = parse_fastq_header(path)
         assert sample.index_i7 == "ATTACTCG"
         assert sample.index_i5 is None

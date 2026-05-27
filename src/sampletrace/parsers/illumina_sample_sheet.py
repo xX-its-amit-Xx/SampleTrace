@@ -118,9 +118,7 @@ def _parse_sample_sheet_text(text: str, source_path: str = "<inline>") -> list[C
     header_row = rows[0]
     col_map = _build_column_map(header_row)
     if "sample_id" not in col_map:
-        raise ValueError(
-            f"could not find sample id column in {section_name} headers: {header_row}"
-        )
+        raise ValueError(f"could not find sample id column in {section_name} headers: {header_row}")
 
     samples: list[CanonicalSample] = []
     for row in rows[1:]:

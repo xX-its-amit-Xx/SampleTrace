@@ -73,17 +73,13 @@ class TestSampleSheetEdgeCases:
 
     def test_blank_rows_skipped(self, tmp_path: Path) -> None:
         sheet = tmp_path / "blanks.csv"
-        sheet.write_text(
-            "[Data]\nSample_ID,index\nS001,ACGT\n\n,\nS002,TGCA\n"
-        )
+        sheet.write_text("[Data]\nSample_ID,index\nS001,ACGT\n\n,\nS002,TGCA\n")
         samples = parse_sample_sheet(sheet)
         assert [s.sample_id for s in samples] == ["S001", "S002"]
 
     def test_utf8_bom_handled(self, tmp_path: Path) -> None:
         sheet = tmp_path / "bom.csv"
-        sheet.write_bytes(
-            b"\xef\xbb\xbf[Data]\nSample_ID,index\nS001,ACGT\n"
-        )
+        sheet.write_bytes(b"\xef\xbb\xbf[Data]\nSample_ID,index\nS001,ACGT\n")
         samples = parse_sample_sheet(sheet)
         assert len(samples) == 1
         assert samples[0].sample_id == "S001"

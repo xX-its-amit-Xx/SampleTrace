@@ -17,15 +17,33 @@ from pathlib import Path
 from sampletrace.schemas import CanonicalSample, SampleSource
 
 # Common non-sample columns we should skip when present at the start.
-_FEATURE_COLUMNS = frozenset({
-    "",  # blank corner cell
-    "gene", "gene_id", "geneid", "gene_name", "genename", "symbol",
-    "feature", "feature_id", "featureid",
-    "transcript", "transcript_id", "transcriptid",
-    "ensembl_id", "ensembl",
-    "chr", "chrom", "start", "end", "strand", "length",
-    "name", "id",
-})
+_FEATURE_COLUMNS = frozenset(
+    {
+        "",  # blank corner cell
+        "gene",
+        "gene_id",
+        "geneid",
+        "gene_name",
+        "genename",
+        "symbol",
+        "feature",
+        "feature_id",
+        "featureid",
+        "transcript",
+        "transcript_id",
+        "transcriptid",
+        "ensembl_id",
+        "ensembl",
+        "chr",
+        "chrom",
+        "start",
+        "end",
+        "strand",
+        "length",
+        "name",
+        "id",
+    }
+)
 
 
 def _detect_delimiter(line: str) -> str:

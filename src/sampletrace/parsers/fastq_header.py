@@ -119,7 +119,9 @@ def parse_fastq_header(path: Path) -> CanonicalSample:
     return CanonicalSample(
         sample_id=sample_id,
         source=SampleSource.FASTQ_HEADER,
-        lane=header_info.get("lane") if header_info.get("lane") is not None else fname_info.get("lane"),  # type: ignore[arg-type]
+        lane=header_info.get("lane")
+        if header_info.get("lane") is not None
+        else fname_info.get("lane"),  # type: ignore[arg-type]
         flowcell_id=header_info.get("flowcell_id"),  # type: ignore[arg-type]
         run_id=header_info.get("run_id"),  # type: ignore[arg-type]
         index_i7=header_info.get("index_i7"),  # type: ignore[arg-type]
@@ -139,9 +141,7 @@ def parse_fastq_directory(directory: Path) -> list[CanonicalSample]:
     seen: dict[str, CanonicalSample] = {}
     # Sort so output is deterministic across platforms.
     paths = sorted(
-        p
-        for p in directory.rglob("*.fastq*")
-        if p.suffix in (".fastq", ".gz") and p.is_file()
+        p for p in directory.rglob("*.fastq*") if p.suffix in (".fastq", ".gz") and p.is_file()
     )
     for p in paths:
         try:

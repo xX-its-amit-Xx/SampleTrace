@@ -44,11 +44,11 @@ class MismatchKind(StrEnum):
 class MatchConfidence(StrEnum):
     """Traffic-light status for per-sample reconciliation."""
 
-    EXACT = "exact"          # green: byte-identical match across sources
-    HIGH = "high"            # green: fuzzy match >= 95
-    MEDIUM = "medium"        # yellow: fuzzy match 80-95
-    LOW = "low"              # red: fuzzy match < 80
-    NONE = "none"            # red: no match at all
+    EXACT = "exact"  # green: byte-identical match across sources
+    HIGH = "high"  # green: fuzzy match >= 95
+    MEDIUM = "medium"  # yellow: fuzzy match 80-95
+    LOW = "low"  # red: fuzzy match < 80
+    NONE = "none"  # red: no match at all
 
     @property
     def is_green(self) -> bool:
@@ -180,7 +180,6 @@ class ReconciliationRow(BaseModel):
         return bool(self.mismatches) or self.confidence.is_red
 
 
-
 class ReconciliationReport(BaseModel):
     """Aggregate report across all samples in a run."""
 
@@ -209,7 +208,8 @@ class ReconciliationReport(BaseModel):
     @property
     def yellow(self) -> list[ReconciliationRow]:
         return [
-            r for r in self.rows
+            r
+            for r in self.rows
             if r.confidence == MatchConfidence.MEDIUM and not r.confidence.is_red
         ]
 

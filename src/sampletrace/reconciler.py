@@ -43,8 +43,8 @@ _NORMALIZE_RE = re.compile(r"[\s\-_.]+")
 class ReconcilerConfig:
     """Tuning knobs for matching and drift detection."""
 
-    fuzzy_threshold: float = 80.0       # below this: no match
-    high_confidence: float = 95.0       # at or above (and not exact): HIGH
+    fuzzy_threshold: float = 80.0  # below this: no match
+    high_confidence: float = 95.0  # at or above (and not exact): HIGH
     require_index_match: bool = True
     check_organism: bool = True
     drift_fields: tuple[str, ...] = (
@@ -138,9 +138,7 @@ def _match_one(
 
         # Tier 3: fuzzy.
         choices = {c.sample_id: c for c in candidates}
-        best = process.extractOne(
-            bch.sample_id, list(choices.keys()), scorer=fuzz.token_sort_ratio
-        )
+        best = process.extractOne(bch.sample_id, list(choices.keys()), scorer=fuzz.token_sort_ratio)
         if best is None:
             continue
         match_id, score, _ = best
@@ -183,9 +181,7 @@ def _check_drift(
         if a in (None, "") or b in (None, ""):
             continue
         if str(a).lower() != str(b).lower():
-            notes.append(
-                f"{field_name}: Benchling={a!r} vs {observed.source.value}={b!r}"
-            )
+            notes.append(f"{field_name}: Benchling={a!r} vs {observed.source.value}={b!r}")
     return notes
 
 
@@ -236,9 +232,7 @@ def reconcile(
         # If any expected downstream source is missing the sample, flag it.
         if sources_missing:
             m.mismatches.append(MismatchKind.MISSING_FROM_DOWNSTREAM)
-            m.notes.append(
-                f"missing from: {', '.join(s.value for s in sources_missing)}"
-            )
+            m.notes.append(f"missing from: {', '.join(s.value for s in sources_missing)}")
             if m.confidence == MatchConfidence.EXACT:
                 # Still exact for what matched, but downgrade so it's not green.
                 m.confidence = MatchConfidence.MEDIUM
@@ -265,7 +259,9 @@ def reconcile(
                 sample_id=bch.sample_id,
                 confidence=m.confidence,
                 sources_present=sources_present,
-                sources_missing=sources_missing if m.confidence != MatchConfidence.NONE else [
+                sources_missing=sources_missing
+                if m.confidence != MatchConfidence.NONE
+                else [
                     *sources_missing,
                     # If we matched nothing at all, all downstream are "missing" for this id.
                 ],
@@ -283,9 +279,7 @@ def reconcile(
             if c.sample_id in matched:
                 continue
             # Is this sample id also in another row's matched_ids? If yes, skip.
-            if any(
-                row.matched_sample_ids.get(src.value) == c.sample_id for row in rows
-            ):
+            if any(row.matched_sample_ids.get(src.value) == c.sample_id for row in rows):
                 continue
             rows.append(
                 ReconciliationRow(

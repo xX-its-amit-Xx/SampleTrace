@@ -136,9 +136,11 @@ def _load_mock_entities(path: Path | None) -> list[dict[str, Any]]:
     if path is not None:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
     else:
-        with resources.files("sampletrace._mock_data").joinpath(
-            "benchling_entities.json"
-        ).open("r", encoding="utf-8") as fh:
+        with (
+            resources.files("sampletrace._mock_data")
+            .joinpath("benchling_entities.json")
+            .open("r", encoding="utf-8") as fh
+        ):
             data = json.load(fh)
     entities = data.get("entities", data) if isinstance(data, dict) else data
     if not isinstance(entities, list):
@@ -241,7 +243,11 @@ def _entity_to_dict(entity: Any) -> dict[str, Any]:
     fields: dict[str, Any] = {}
     sdk_fields = getattr(entity, "fields", None)
     if sdk_fields is not None:
-        for field_name, field in (sdk_fields.additional_keys or {}).items() if hasattr(sdk_fields, "additional_keys") else []:
+        for field_name, field in (
+            (sdk_fields.additional_keys or {}).items()
+            if hasattr(sdk_fields, "additional_keys")
+            else []
+        ):
             value = getattr(field, "value", None) or getattr(field, "display_value", None)
             fields[field_name] = value
         # Best-effort: some SDK versions expose fields as a dict directly.

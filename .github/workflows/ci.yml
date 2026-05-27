@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Format check (ruff)
+        run: ruff format --check .
+
+      - name: Type check (mypy)
+        run: mypy
+
+      - name: Test with coverage
+        run: pytest --cov --cov-report=term --cov-report=xml --cov-fail-under=75
+
+      - name: Upload coverage XML
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  docker:
+    name: docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f docker/Dockerfile -t sampletrace:ci .
+      - name: Smoke test (mock reconcile)
+        run: |
+          mkdir -p reports
+          docker run --rm \
+            -v "$PWD/tests/fixtures:/data:ro" \
+            -v "$PWD/reports:/out" \
+            sampletrace:ci \
+            reconcile --mock --sample-sheet /data/SampleSheet_v1.csv --output-dir /out
+          test -f reports/reconciliation_report.html
+          test -f reports/sample_provenance.json

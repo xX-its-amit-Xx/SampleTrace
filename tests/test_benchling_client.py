@@ -47,12 +47,7 @@ class TestLoadConfig:
 
     def test_partial_schema_mapping_merged_with_default(self, tmp_path: Path) -> None:
         path = tmp_path / "cfg.yml"
-        path.write_text(
-            "benchling:\n"
-            "  mock: true\n"
-            "schema_mapping:\n"
-            "  sample_id: 'My Custom ID'\n"
-        )
+        path.write_text("benchling:\n  mock: true\nschema_mapping:\n  sample_id: 'My Custom ID'\n")
         cfg = load_config(path)
         assert cfg.schema_mapping["sample_id"] == "My Custom ID"
         # Other keys keep their defaults.
@@ -110,11 +105,14 @@ class TestMapEntity:
             "name": "S001",
             "fields": {"Sample ID": "S001", "Organism": "", "Tissue": None},
         }
-        sample = _map_entity(entity, {
-            "sample_id": "Sample ID",
-            "organism": "Organism",
-            "tissue": "Tissue",
-        })
+        sample = _map_entity(
+            entity,
+            {
+                "sample_id": "Sample ID",
+                "organism": "Organism",
+                "tissue": "Tissue",
+            },
+        )
         assert sample is not None
         assert sample.organism is None
         assert sample.tissue is None
