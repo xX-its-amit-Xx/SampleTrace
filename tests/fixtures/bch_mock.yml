@@ -1,0 +1,19 @@
+benchling:
+  tenant_url: https://example.benchling.com
+  api_key: null
+  schema_id: ts_mockschema001
+  mock: true
+
+schema_mapping:
+  sample_id: "Sample ID"
+  library_id: "Library ID"
+  index_i7: "i7 index"
+  index_i5: "i5 index"
+  organism: "Organism"
+  tissue: "Tissue"
+  sample_type: "Sample Type"
+  project_id: "Sample Project"
+
+reconciliation:
+  fuzzy_threshold: 80
+  high_confidence: 95

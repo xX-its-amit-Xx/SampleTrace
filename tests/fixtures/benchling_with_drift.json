@@ -1,0 +1,29 @@
+{
+  "schema_id": "ts_mockschema001",
+  "entities": [
+    {
+      "id": "bfi_drift0001",
+      "name": "S001_ctrl",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S001_ctrl",
+        "Library ID": "LIB_DRIFT_001",
+        "i7 index": "ATTACTCG",
+        "Organism": "Homo sapiens",
+        "Tissue": "PBMC"
+      }
+    },
+    {
+      "id": "bfi_drift0002",
+      "name": "S002_swap",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S002_swap",
+        "Library ID": "LIB_DRIFT_002",
+        "i7 index": "AAAATCCC",
+        "Organism": "Mus musculus",
+        "Tissue": "Liver"
+      }
+    }
+  ]
+}

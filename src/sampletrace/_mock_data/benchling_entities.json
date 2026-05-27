@@ -1,0 +1,66 @@
+{
+  "schema_id": "ts_mockschema001",
+  "schema_name": "NGS Library Registration",
+  "entities": [
+    {
+      "id": "bfi_mock0000001",
+      "name": "S001_ctrl",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S001_ctrl",
+        "Library ID": "LIB_PBMC_001",
+        "i7 index": "ATTACTCG",
+        "i5 index": "TATAGCCT",
+        "Organism": "Homo sapiens",
+        "Tissue": "PBMC",
+        "Sample Type": "RNA-seq",
+        "Sample Project": "proj_pbmc"
+      }
+    },
+    {
+      "id": "bfi_mock0000002",
+      "name": "S002_ctrl",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S002_ctrl",
+        "Library ID": "LIB_PBMC_002",
+        "i7 index": "TCCGGAGA",
+        "i5 index": "ATAGAGGC",
+        "Organism": "Homo sapiens",
+        "Tissue": "PBMC",
+        "Sample Type": "RNA-seq",
+        "Sample Project": "proj_pbmc"
+      }
+    },
+    {
+      "id": "bfi_mock0000003",
+      "name": "S003_trt",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S003_trt",
+        "Library ID": "LIB_PBMC_003",
+        "i7 index": "CGCTCATT",
+        "i5 index": "CCTATCCT",
+        "Organism": "Homo sapiens",
+        "Tissue": "PBMC",
+        "Sample Type": "RNA-seq",
+        "Sample Project": "proj_pbmc"
+      }
+    },
+    {
+      "id": "bfi_mock0000004",
+      "name": "S004_trt",
+      "schema_id": "ts_mockschema001",
+      "fields": {
+        "Sample ID": "S004_trt",
+        "Library ID": "LIB_PBMC_004",
+        "i7 index": "GAGATTCC",
+        "i5 index": "GGCTCTGA",
+        "Organism": "Homo sapiens",
+        "Tissue": "PBMC",
+        "Sample Type": "RNA-seq",
+        "Sample Project": "proj_pbmc"
+      }
+    }
+  ]
+}
