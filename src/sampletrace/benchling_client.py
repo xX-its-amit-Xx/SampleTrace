@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from importlib import resources
 from pathlib import Path
 from typing import Any
@@ -26,6 +25,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
+from sampletrace.credentials import KeyResolution, resolve_api_key
 from sampletrace.schemas import CanonicalSample, SampleSource
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,14 @@ _DEFAULT_SCHEMA_MAPPING: dict[str, str] = {
 
 
 class BenchlingConfig(BaseModel):
-    """Validated Benchling configuration loaded from YAML or constructed in code."""
+    """Validated Benchling configuration loaded from YAML or constructed in code.
+
+    ``api_key`` is intentionally optional and *should be left unset* in any
+    file that lives in source control. The runtime resolves it through
+    :func:`sampletrace.credentials.resolve_api_key` (env var > OS keyring >
+    .env > YAML). Carrying the key in the YAML works but is the least safe
+    option and earns a warning at load time.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -60,13 +67,18 @@ class BenchlingConfig(BaseModel):
     mock_data_path: Path | None = None
 
 
-def load_config(path: Path | str) -> BenchlingConfig:
+def load_config(path: Path | str, *, resolve_credentials: bool = True) -> BenchlingConfig:
     """Load and validate a ``bch.yml``-style config file.
 
     Recognized top-level keys: ``benchling:`` (BenchlingConfig fields) and
     ``schema_mapping:`` (merged into BenchlingConfig.schema_mapping). The
     ``reconciliation:`` section is read separately by the CLI and ignored
     here.
+
+    If ``resolve_credentials`` is True (default), the API key is resolved
+    via :func:`sampletrace.credentials.resolve_api_key` and stamped onto
+    the returned config. Set False if you want the raw YAML value (for
+    diagnostics like ``sampletrace verify-auth --dry-run``).
     """
     path = Path(path)
     if not path.exists():
@@ -79,13 +91,35 @@ def load_config(path: Path | str) -> BenchlingConfig:
     merged_mapping.update(mapping_section)
     bch_section.setdefault("schema_mapping", merged_mapping)
 
-    # Env var takes precedence over config file for the api_key, so
-    # secrets don't accidentally end up in version control.
-    env_key = os.environ.get("BENCHLING_API_KEY")
-    if env_key:
-        bch_section["api_key"] = env_key
+    if resolve_credentials:
+        resolution = resolve_api_key(
+            tenant_url=bch_section.get("tenant_url"),
+            yaml_value=bch_section.get("api_key"),
+        )
+        if resolution.api_key is not None:
+            bch_section["api_key"] = resolution.api_key
+            logger.info(
+                "Benchling API key loaded from %s (%s)",
+                resolution.source.value,
+                resolution.redacted,
+            )
+        else:
+            # Don't crash here — mock mode and verify-auth dry runs don't need a key.
+            bch_section["api_key"] = None
 
     return BenchlingConfig(**bch_section)
+
+
+def resolve_credentials_for(config: BenchlingConfig) -> KeyResolution:
+    """Resolve credentials for a pre-built config object.
+
+    Useful when the config came from somewhere other than YAML (e.g.
+    constructed in tests, or built programmatically by a calling pipeline).
+    """
+    return resolve_api_key(
+        tenant_url=config.tenant_url,
+        yaml_value=config.api_key,
+    )
 
 
 def _map_entity(entity: dict[str, Any], mapping: dict[str, str]) -> CanonicalSample | None:
@@ -178,6 +212,65 @@ class BenchlingClient:
         if self.is_mock:
             return self._fetch_mock()
         return self._fetch_real()
+
+    def verify_auth(self) -> dict[str, Any]:
+        """Hit Benchling with one cheap call to confirm credentials work.
+
+        Returns a small dict describing what was reached. Designed to be the
+        one place a user can run after ``sampletrace configure`` to know
+        whether their key, tenant URL, and schema_id all line up — without
+        actually pulling sample data into a report or onto the screen.
+
+        Raises:
+            ValueError: missing tenant_url or api_key (caller likely needs
+                to run ``sampletrace configure`` or set BENCHLING_API_KEY).
+            ImportError: benchling-sdk not installed.
+            Exception: any HTTP / auth error from the SDK is propagated so
+                the caller can surface a useful message.
+        """
+        if self.is_mock:
+            return {
+                "ok": True,
+                "mode": "mock",
+                "tenant_url": None,
+                "schema_id": self.config.schema_id,
+                "note": "mock mode — no Benchling call made",
+            }
+        if not self.config.tenant_url or not self.config.api_key:
+            raise ValueError(
+                "verify-auth needs tenant_url and a resolvable API key. "
+                "Run `sampletrace configure` or set BENCHLING_API_KEY."
+            )
+        try:
+            from benchling_sdk.auth.api_key_auth import ApiKeyAuth
+            from benchling_sdk.benchling import Benchling
+        except ImportError as e:
+            raise ImportError(
+                "benchling-sdk not installed. Install with: pip install 'sampletrace[benchling]'"
+            ) from e
+
+        client = Benchling(
+            url=self.config.tenant_url,
+            auth_method=ApiKeyAuth(self.config.api_key),
+        )
+        # Single-page call with page_size=1 — minimal data, just enough to
+        # confirm auth + schema_id are valid.
+        list_kwargs: dict[str, Any] = {"page_size": 1}
+        if self.config.schema_id:
+            list_kwargs["schema_id"] = self.config.schema_id
+        if self.config.project_id:
+            list_kwargs["project_id"] = self.config.project_id
+
+        pages = client.custom_entities.list(**list_kwargs)
+        first_page: Any = next(iter(pages), [])
+        sample_count = len(list(first_page))
+        return {
+            "ok": True,
+            "mode": "real",
+            "tenant_url": self.config.tenant_url,
+            "schema_id": self.config.schema_id,
+            "first_page_count": sample_count,
+        }
 
     def _fetch_mock(self) -> list[CanonicalSample]:
         entities = _load_mock_entities(self.config.mock_data_path)

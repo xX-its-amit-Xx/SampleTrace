@@ -36,6 +36,8 @@ dependencies = [
 [project.optional-dependencies]
 benchling = [
     "benchling-sdk>=1.15",
+    "keyring>=24.0",        # OS keyring for ``sampletrace configure``
+    "python-dotenv>=1.0",   # auto-load .env at CLI startup
 ]
 dashboard = [
     "streamlit>=1.31",
@@ -113,6 +115,8 @@ module = [
     "rapidfuzz.*",
     "streamlit.*",
     "plotly.*",
+    "keyring.*",
+    "dotenv.*",
 ]
 ignore_missing_imports = true
 

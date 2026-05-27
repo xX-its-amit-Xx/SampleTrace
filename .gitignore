@@ -46,3 +46,12 @@ Thumbs.db
 .benchling.yml
 reports/
 out/
+
+# Secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+bch.local.yml
+bch.local.yaml

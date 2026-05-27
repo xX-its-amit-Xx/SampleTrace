@@ -65,13 +65,28 @@ before you have a Benchling tenant wired up.
 
 ## Configuration
 
-Create `bch.yml`:
+The fastest way to get going with a real Benchling tenant:
+
+```bash
+sampletrace configure --tenant-url https://yourtenant.benchling.com
+# stores your API key in the OS keyring; writes a sanitized bch.yml template
+
+sampletrace verify-auth --benchling-config bch.yml
+# confirms the key + tenant + schema_id all work without ingesting data
+```
+
+The key is read at runtime via the documented precedence
+(`BENCHLING_API_KEY` env var → OS keyring → `.env` → YAML). It's never
+echoed back, never logged, never written to any output file.
+See [docs/credentials.md](docs/credentials.md) for the full credential
+story across laptop / CI / Docker / k8s.
+
+Sample `bch.yml`:
 
 ```yaml
 benchling:
   tenant_url: https://yourtenant.benchling.com
-  # auth: read from BENCHLING_API_KEY env var (recommended) or set api_key below
-  api_key: null
+  api_key: null                     # resolved at runtime; DO NOT commit a key here
   schema_id: ts_xxxxxxxxxxxx        # Sample registration schema
   project_id: src_xxxxxxxxxxxx      # Optional: filter to one project
 
@@ -158,9 +173,10 @@ See [docker-compose.yml](docker-compose.yml) and [docker/Dockerfile](docker/Dock
 ## Documentation
 
 - [docs/config.md](docs/config.md) — full configuration schema
+- [docs/credentials.md](docs/credentials.md) — where to put your Benchling API key (laptop, CI, Docker, k8s) and what NOT to do
 - [docs/benchling_permissions.md](docs/benchling_permissions.md) — what Benchling permissions SampleTrace needs and why
 - [docs/threat_model.md](docs/threat_model.md) — categories of metadata drift this tool is designed to catch (and what it can't catch)
-- [examples/cookbook.md](examples/cookbook.md) — runnable end-to-end use cases
+- [examples/cookbook.md](examples/cookbook.md) — runnable end-to-end use cases (including a real-Benchling laptop setup walkthrough)
 
 ## License
 

@@ -226,6 +226,72 @@ should not proceed to expensive alignment.
 
 ---
 
+## Recipe 5 — "Set up real Benchling credentials safely on a laptop"
+
+**You have a real Benchling tenant. You want to start running SampleTrace
+against it locally without pasting your API key into any file under git.**
+
+```bash
+# 1. Store the key in your OS keyring (Keychain on macOS, Credential Manager
+#    on Windows, Secret Service on Linux). Input is hidden + confirmed.
+sampletrace configure --tenant-url https://your-tenant.benchling.com
+
+# 2. Edit the generated bch.yml to fill in schema_id (and project_id if needed):
+#       schema_id: ts_xxxxxxxxxxxx
+#    The api_key line stays `null` — the runtime reads from the keyring.
+
+# 3. Confirm Benchling is reachable with the resolved key, WITHOUT pulling
+#    any data. Hits the API once with page_size=1.
+sampletrace verify-auth --benchling-config bch.yml
+
+# 4. Now run a real reconcile.
+sampletrace reconcile \
+    --benchling-config bch.yml \
+    --sample-sheet /path/to/your/SampleSheet.csv \
+    --output-dir reports/realrun/
+```
+
+What you'll see from `verify-auth` on success:
+
+```
+tenant URL    : https://your-tenant.benchling.com
+schema_id     : ts_xxxxxxxxxxxx
+key source    : keyring
+key (redacted): ***abcd
+
+OK — Benchling reachable
+  mode             : real
+  first page count : 1
+```
+
+`key (redacted)` is intentionally just the last 4 chars. The full key is
+never printed by any SampleTrace command, never written to any output file,
+and never logged even with `-v`.
+
+**Alternative — `.env` file** (if you prefer files over the keyring):
+
+```bash
+cp .env.example .env
+# edit .env to put your real key in BENCHLING_API_KEY=...
+sampletrace verify-auth --benchling-config bch.yml
+```
+
+`.env` is gitignored. `.env.example` is committed as the template.
+
+**Alternative — environment variable** (if you're scripting or in CI):
+
+```bash
+export BENCHLING_API_KEY="sk_..."
+sampletrace verify-auth --benchling-config bch.yml
+```
+
+Env var beats keyring beats `.env` beats YAML. See
+[docs/credentials.md](../docs/credentials.md) for the full precedence
+chain, OS keyring backend details, Docker secrets pattern, and Kubernetes
+example.
+
+---
+
 ## Interactive triage with the dashboard
 
 After any of the above, launch the dashboard to drill into individual rows:

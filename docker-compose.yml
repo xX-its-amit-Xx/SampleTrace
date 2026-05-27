@@ -2,10 +2,13 @@
 #
 # Usage:
 #   docker compose run --rm reconcile               # mock-mode smoke test
-#   docker compose run --rm reconcile-real          # real Benchling (set env)
+#   docker compose run --rm verify-auth             # confirm creds wired up
+#   docker compose run --rm reconcile-real          # real Benchling (env-based)
+#   docker compose run --rm reconcile-secrets       # real Benchling (file-secret)
 #   docker compose up dashboard                     # interactive dashboard
 #
 # Mount your sample sheet / fastq dir / config in via the volumes section.
+# See docs/credentials.md for the full secret-handling story.
 
 services:
   reconcile:
@@ -15,13 +18,25 @@ services:
     image: sampletrace:latest
     command: >
       reconcile --mock
-        --sample-sheet /data/SampleSheet.csv
+        --sample-sheet /data/SampleSheet_v1.csv
         --output-dir /out
         --run-id docker_demo
     volumes:
       - ./tests/fixtures:/data:ro
       - ./reports:/out
 
+  # Cheap credential ping before you spend compute on a real reconcile.
+  verify-auth:
+    image: sampletrace:latest
+    command: verify-auth --benchling-config /config/bch.yml
+    environment:
+      # Preferred pattern: secret comes from your shell, never from a file.
+      BENCHLING_API_KEY: ${BENCHLING_API_KEY:-}
+    volumes:
+      - ./config:/config:ro
+
+  # Real reconcile, env-var credential pattern.
+  # Run with: export BENCHLING_API_KEY=sk_... && docker compose run --rm reconcile-real
   reconcile-real:
     image: sampletrace:latest
     command: >
@@ -32,7 +47,32 @@ services:
         --output-dir /out
         --fail-on-flagged
     environment:
-      BENCHLING_API_KEY: ${BENCHLING_API_KEY}
+      BENCHLING_API_KEY: ${BENCHLING_API_KEY:?BENCHLING_API_KEY is required}
+    volumes:
+      - ./config:/config:ro
+      - ./data:/data:ro
+      - ./reports:/out
+
+  # Real reconcile, docker-secret credential pattern.
+  # The secret file ./secrets/benchling_api_key.txt must exist locally and
+  # MUST be in .gitignore. The container reads it into the env var at
+  # startup so the SampleTrace credential resolver picks it up.
+  reconcile-secrets:
+    image: sampletrace:latest
+    secrets:
+      - benchling_api_key
+    entrypoint:
+      - sh
+      - -c
+      - 'export BENCHLING_API_KEY="$$(cat /run/secrets/benchling_api_key)" && exec sampletrace "$$@"'
+      - --
+    command: >
+      reconcile
+        --benchling-config /config/bch.yml
+        --sample-sheet /data/SampleSheet.csv
+        --fastq-dir /data/fastq
+        --output-dir /out
+        --fail-on-flagged
     volumes:
       - ./config:/config:ro
       - ./data:/data:ro
@@ -46,3 +86,7 @@ services:
       - "8501:8501"
     volumes:
       - ./reports:/out:ro
+
+secrets:
+  benchling_api_key:
+    file: ./secrets/benchling_api_key.txt
