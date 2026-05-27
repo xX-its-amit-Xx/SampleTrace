@@ -7,7 +7,7 @@ include a "real Benchling" toggle at the bottom of each recipe.
 ## Setup (once)
 
 ```bash
-git clone https://github.com/yourorg/SampleTrace.git
+git clone https://github.com/xX-its-amit-Xx/SampleTrace.git
 cd SampleTrace
 pip install -e ".[benchling,dashboard,dev]"
 ```

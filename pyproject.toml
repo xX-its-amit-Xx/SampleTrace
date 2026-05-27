@@ -58,9 +58,9 @@ all = [
 sampletrace = "sampletrace.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourorg/SampleTrace"
-Issues = "https://github.com/yourorg/SampleTrace/issues"
-Documentation = "https://github.com/yourorg/SampleTrace/blob/main/docs/"
+Homepage = "https://github.com/xX-its-amit-Xx/SampleTrace"
+Issues = "https://github.com/xX-its-amit-Xx/SampleTrace/issues"
+Documentation = "https://github.com/xX-its-amit-Xx/SampleTrace/blob/main/docs/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sampletrace"]
